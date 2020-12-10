@@ -13,6 +13,8 @@ FilmManager filmManager("films.dat");
 UserManager userManager("user.dat", filmManager);
 Console console(600, 400);
 
+void ShowUsers();
+
 int main()
 {
     Menu menu();
@@ -67,7 +69,7 @@ void Start()
 					BuyTicket();
 					return;
 				case 2:
-					if(userManager.currentUser->hasAttributes(UserAttributes::Admin) ShowUsers();
+					if(userManager.currentUser->hasAttributes(UserAttributes::Admin)) ShowUsers();
 					return;
 				case 3:
 					if (userManager.currentUser->hasAttributes(UserAttributes::Admin) ShowFilms();
@@ -236,7 +238,7 @@ void GetTicketOnFilm(int position)
 	}
 }
 
-void ShowUser()
+void ShowUsers()
 {
 	system("cls");
 	printf("Имя пользователя:");
@@ -244,7 +246,7 @@ void ShowUser()
 	{
 		printf("\n\t%s", user.GetName());
 	}
-	printf("\nEsc - выход");
+	printf("\n\nDelete - удалить\nEsc - выход");
 	int position = 0;
 	while (_kbhit() == 0)
 	{
@@ -458,6 +460,141 @@ void SelectUser(int position)
 					}
 			}
 			return;
+		default:
+			break;
+		}
+		console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+	}
+}
+
+void ShowFilms()
+{
+	system("cls");
+	printf("Название фильма:");
+	for (auto film : userManager.filmManager.GetFilms())
+	{
+		printf("\n\t%s", film.name);
+	}
+	printf("\n\nDelete - удалить\nEsc - выход");
+	int position = 0;
+	while (_kbhit() == 0)
+	{
+
+	}
+	char ch = _getch();
+	while (ch != Keys::Esc)
+	{
+		switch (ch)
+		{
+		case Keys::UpArrow:
+			position = mod(--position, userManager.filmManager.GetFilms().size());
+			break;
+		case Keys::DownArrow:
+			position = mod(++position, userManager.filmManager.GetFilms().size());
+			break;
+		case Keys::Delete:
+			auto film_it = userManager.filmManager.GetFilms().begin();
+			for (int i = 0; i < position; i++)
+			{
+				film_it++;
+			}
+			userManager.filmManager.GetFilms().erase(film_it);
+			filmManager.WriteObject();
+			return;
+		case Keys::Enter:
+			SelectFilm(position);
+			return;
+		default:
+			break;
+		}
+		console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+	}
+}
+
+void SelectFilm(int position)
+{
+	system("cls");
+	auto film_it = userManager.filmManager.GetFilms().begin();
+	for (int i = 0; i < position; i++)
+	{
+		film_it++;
+	}
+	printf("Фильмы:");
+	printf("\n\tНазвание:%s\n\t\tID:%d\n\t\tДата:%s\n\t\tВремя:%s\n\t\tЦена:%d руб", (*film_it).name, (*film_it).FilmId, (*film_it).data, (*film_it).time, (*film_it).cost, (*film_it).room);
+	printf("\n\nEsc - выход");
+	int position = 0;
+	while (_kbhit() == 0)
+	{
+
+	}
+	char ch = _getch();
+	while (ch != Keys::Esc)
+	{
+		switch (ch)
+		{
+		case Keys::UpArrow:
+			position = mod(--position, 5);
+			break;
+		case Keys::DownArrow:
+			position = mod(++position, 5);
+			break;
+		case Keys::Enter:
+			switch (position)
+			{
+			case 0:
+				system("cls");
+				string name;
+				printf("Введите новое название:\n");
+				::cin >> name;
+				(*film_it).name = name;
+				userManager.filmManager.WriteObject();
+				return;
+			case 1:
+				system("cls");
+				printf("Нельзя менять ID");
+				return;
+			case 2:
+				system("cls");
+				string date;
+				while (true)
+				{
+					printf("Введите новую дату:\n");
+					::cin >> name;
+					if (Validator::isDataValid(date))
+					{
+						(*film_it).data = date;
+						userManager.filmManager.WriteObject();
+						return;
+					}
+					printf("Неверный формат\n\n");
+				}
+			case 3:
+				system("cls");
+				string time;
+				while (true)
+				{
+					printf("Введите новое время:\n");
+					::cin >> time;
+					if (Validator::isTimeValid(time))
+					{
+						(*film_it).time = time;
+						userManager.filmManager.WriteObject();
+						return;
+					}
+					printf("Неверный формат\n\n");
+				}
+			case 4:
+				system("cls");
+				int cost;
+				while (true)
+				{
+					printf("Введите новую цену:\n");
+					::cin >> cost;
+					(*film_it).cost = cost;
+					userManager.filmManager.WriteObject();
+					return;
+				}
+			}
 		default:
 			break;
 		}
