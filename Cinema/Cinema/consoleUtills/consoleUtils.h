@@ -49,13 +49,17 @@ public:
 		SetConsoleTitle(L"Кинотеатр");
 		this->xSize = xSize;
 		this->ySize = ySize;
-		char buff[40];
+		char buffer[40];
 		sprintf(buffer, "mode con cols=%d lines=%d", xSize, ySize); 
 		system(buffer);
 		stdoutHndl = GetStdHandle(STD_OUTPUT_HANDLE);
 		this->cursor.X = 0;
 		this->cursor.Y = 0;
 	}
+
+	int xSize;
+
+	int ySize;
 
 	bool SetCursor(int x, int y)
 	{
@@ -82,7 +86,7 @@ public:
 
 	void SetCursorInvisible()
 	{
-		СONSOLE_CURSOR_INFO curs = {0};
+		CONSOLE_CURSOR_INFO curs = {0};
    		curs.dwSize = sizeof(curs);
    		curs.bVisible = FALSE;
 		SetConsoleCursorInfo(this->stdoutHndl, &curs);
@@ -90,7 +94,7 @@ public:
 
 	bool SetCursorVisible()
 	{
-		СONSOLE_CURSOR_INFO curs = {0};
+		CONSOLE_CURSOR_INFO curs = {0};
    		curs.dwSize = sizeof(curs);
    		curs.bVisible = TRUE;
 		SetConsoleCursorInfo(this->stdoutHndl, &curs);
@@ -103,9 +107,6 @@ public:
 private:
 	COORD cursor;
 
-	int xSize;
-
-	int ySize;
 
 	HANDLE stdoutHndl;
 };

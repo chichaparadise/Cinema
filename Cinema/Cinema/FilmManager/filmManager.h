@@ -49,6 +49,12 @@ public:
         return _Responce;
     }
 
+    list<Film> GetFilms()
+    {
+        list<Film> newList(filmList);
+        return newList;
+    }
+
     Film SearchFilmById(int& filmId)
     {
         for (auto film : filmList)

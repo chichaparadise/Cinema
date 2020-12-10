@@ -4,375 +4,230 @@
 #include "FilmManager\filmManager.h"
 #include "UserManager\UserManager.h"
 #include "consoleUtills\consoleUtils.h"
+#include "menu.h"
+#include "Crypto\cryptoUtil.h"
 
 using namespace std;
 
-void AuthorizedMenu(FilmManager&, UserManager&, User&);
-void UnauthorizedMenu(BusDbContext*, UserDbContext*, User*&);
-bool Authorisation(UserDbContext*, User*&);
-bool Registration(UserDbContext*, User*&);
-void ShowBusDb(BusDbContext*, User*&);
-void ShowUserDb(UserDbContext*, User*&);
-
-Console console = Console();
+FilmManager filmManager("films.dat");
+UserManager userManager("user.dat", filmManager);
+Console console(600, 400);
 
 int main()
 {
-    Configuration* config = new Configuration("configuration.txt");
-    config->ReadObject();
-    UserDbContext* userDbContext = new UserDbContext(config->UsersDbSrc.c_str());
-    userDbContext->ReadObject();
-    User* currentUser = nullptr;
-    BusDbContext* busDbContext = new BusDbContext(config->BusDbSrc.c_str());
-    busDbContext->ReadObject();
-    while (true) {
-        if (currentUser == nullptr) UnauthorizedMenu(busDbContext, userDbContext, currentUser);
-        else AuthorizedMenu(busDbContext, userDbContext, currentUser);
-    }
+    Menu menu();
+	while (true) Start();
     return 0;
 }
 
-void AuthorizedMenu(BusDbContext* busDbContext, UserDbContext* userDbContext, User*& currentUser)
+int mod(int a, int b)
 {
-    while (true) {
-        system("cls");
-        uint8_t choice;
-        bool stop = false;
-        cout << "Добро рожаловть в Систему Учёта Городского Транспорта " << currentUser->Name << "\n1. Просмотреть транспорт\n2. Выход из учётной записи\n";
-        if (currentUser->Attributes) cout << "3. Просмотреть пользователей" << endl;
-        cout << "Esc - Выход" << endl;
-        choice = _getch();
-        if (choice == 27) exit(0);
-        choice -= 48;
-        switch (choice) {
-        case 1:
-            ShowBusDb(busDbContext, currentUser);
-            stop = true;
-            break;
-        case 2:
-            currentUser = nullptr;
-            stop = true;
-            break;
-        case 3:
-            if (currentUser->Attributes) {
-                ShowUserDb(userDbContext, currentUser);
-                stop = true;
-            }
-            break;
-        default:
-        {
-            break;
-        }
-        if (stop) break;
-    }
+	int d = a / b;
+	return abs(a) - abs(d) * b;
 }
 
-void UnauthorizedMenu(BusDbContext* busDbContext, UserDbContext* userDbContext, User*& currentUser)
+void Start()
 {
-    while (true) {
-        system("cls");
-        uint8_t choice;
-        bool stop = false;
-        cout << "Добро рожаловть в Систему Учёта Городского Транспорта\n1. Зарегистрироваться\n2. Авторизоваться\n3. Просмотреть транспорт\nEsc - Выход" << endl;
-        choice = _getch();
-        if (choice == 27) exit(0);
-        choice -= 48;
-        switch (choice) {
-        case 1:
-            stop = Registration(userDbContext, currentUser);
-            break;
-        case 2:
-            stop = Authorisation(userDbContext, currentUser);
-            break;
-        case 3:
-            ShowBusDb(busDbContext, currentUser);
-            stop = true;
-            break;
-        default:
-            break;
-        }
-        if (stop) break;
-    }
+	if (userManager.currentUser != nullptr)
+	{
+		int perms;
+		if (userManager.currentUser->hasAttributes(UserAttributes::Admin))
+		{
+			perms = 4;
+			printf("Добро пожаловать, %s!\n\tВыйти из учётной записи\n\tКупить билет\n\tРедактировать ,базу пользователей\n\tРедактировать базу фильмов\n\n\tEsc - выход", userManager.currentUser->GetName());
+		}
+		else
+		{
+			perms = 2;
+			printf("Добро пожаловать, %s!\n\tВыйти из учётной записи\n\tКупить билет\n\n\tEsc - выход", userManager.currentUser->GetName());
+		}
+		int position = 0;
+		while (_kbhit() == 0)
+		{
+
+		}
+		char ch = _getch();
+		while (ch != Keys::Esc)
+		{
+			switch (ch)
+			{
+			case Keys::UpArrow:
+				position = mod(--position, perms);
+				break;
+			case Keys::DownArrow:
+				position = mod(++position, perms);
+				break;
+			case Keys::Enter:
+				switch (position)
+				{
+				case 0:
+					userManager.Logout();
+					return;
+				case 1:
+					BuyTicket();
+					return;
+				case 2:
+					if(userManager.currentUser->hasAttributes(UserAttributes::Admin) ShowUsers();
+					return;
+				case 3:
+					if (userManager.currentUser->hasAttributes(UserAttributes::Admin) ShowFilms();
+					return;
+				default:
+					throw_exception("Unexpected cursor position", NULL, error_type::unknown_error, NULL);
+				}
+				break;
+			default:
+				break;
+			}
+			console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+		}
+	}
+	else
+	{
+		printf("Добро пожаловать!\n\tЗарегистрироваться\n\tАвторизоваться\n\n\tEsc - выход");
+		int position = 0;
+		while (_kbhit() == 0)
+		{
+
+		}
+		char ch = _getch();
+		while (ch != Keys::Esc)
+		{
+			switch (ch)
+			{
+			case Keys::UpArrow:
+				position = mod(--position, 2);
+				break;
+			case Keys::DownArrow:
+				position = mod(++position, 2);
+				break;
+			case Keys::Enter:
+				switch (position)
+				{
+				case 0:
+					Registration();
+					return;
+				case 1:
+					Authorisation();
+					return;
+				default:
+					throw_exception("Unexpected cursor position", NULL, error_type::unknown_error, NULL);
+				}
+				break;
+			default:
+				break;
+			}
+			console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+		}
+	}
 }
 
-bool Authorisation(UserDbContext* userDbContext, User*& currentUser)
+void Authorisation()
 {
-    system("cls");
-    cout << "Введите имя" << endl;
-    string name, password;
-    cin >> name;
-    cout << "Введите пароль" << endl;
-    cin >> password;
-    for (auto user : userDbContext->Users)
-    {
-        string tmpLog = user->Name;
-        string tmpPass = user->Password;
-        if (tmpLog == name && tmpPass == password)
-        {
-            currentUser = user;
-            return true;
-        }
-    }
-    cout << "Не успешно\nНажмите любую кнопку для выхода" << endl;
-    _getch();
-    return true;
+		system("cls");
+		printf("Введите имя пользователя:\n");
+		string name;
+		::cin >> name;
+		printf("Введите пароль:\n");
+		string password;
+		::cin >> password;
+		if (!userManager.Authorise(name, password))
+		{
+			printf("Неверные данные\n\nEsc - возврат");
+			if (_getch() == Keys::Esc) return;
+		}
 }
 
-bool Registration(UserDbContext* userDbContext, User*& user)
+void Registration()
 {
-    system("cls");
-    user = new User();
-    cout << "Введите имя" << endl;
-    string str;
-    cin >> str;
-    for (auto user : userDbContext->Users)
-    {
-        if (str == user->Name)
-        {
-            cout << "Пользователь с таким именем уже существует\nНажмите любую кнопку для выхода";
-            _getch();
-            return false;
-        }
-    }
-    user->Name = str;
-    cout << "Введите пароль" << endl;
-    cin >> str;
-    user->Password = str;
-    if (userDbContext->Users.size() == 0) user->Attributes = true;
-    else user->Attributes = false;
-    user->Initialized = true;
-    userDbContext->Users.push_back(user);
-    userDbContext->UserCount++;
-    userDbContext->WriteObject();
-    return true;
+	system("cls");
+	bool isValid = false;
+	string name, password;
+	while (true) {
+		printf("Введите имя пользователя:\n");
+		::cin >> name;
+		isValid = Validator::isNameValid(name);
+		if (!isValid) printf("Введенные данные не корректны\n");
+		else break;
+	}
+	isValid = false;
+	printf("Введите пароль:\n");
+	::cin >> password;
+	crypto::xorEncrypt(password, crypto::_key);
+	list<int> films;
+	User user;
+	if(userManager.userList.size() == 0) user = User(name, password, UserAttributes::Admin, films);
+	else user = User(name, password, NULL, films);
+	userManager.AddUser(user);
+	userManager.currentUser = &user;
+	userManager.WriteObject();
 }
 
-void CreateBus(Bus*& bus)
+void BuyTicket()
 {
-    system("cls");
-    if (bus == nullptr) bus = new Bus();
-    cout << "Введите номер автобуса\n" << endl;
-    cin >> bus->BusNumber;
-    cout << "Введите количество станций автобуса\n" << endl;
-    cin >> bus->BusStationCount;
-    for (int i = 0; i < bus->BusStationCount; i++)
-    {
-        std::string str;
-        cin >> str;
-        bus->BusStations.push_back(str);
-    }
-    cout << "Введите время начала работы автобуса автобуса\n" << endl;
-    cin >> bus->StartTime;
-    cout << "Введите интервал работы автобуса\n" << endl;
-    cin >> bus->dTime;
+	system("cls");
+	printf("Доступные фильмы():");
+	for (auto film : userManager.filmManager.GetFilms())
+	{
+		printf("\n\tНазвание:%s\n\t\tID:%d\n\t\tДата:%s\n\t\tВремя:%s\n\t\tЦена:%d руб\n\t\t", film.name, film.FilmId, film.data, film.time, film.cost, film.room);
+	}
+	printf("\n\n\tEsc - выход");
+	int position = 0;
+	while (_kbhit() == 0)
+	{
+
+	}
+	char ch = _getch();
+	while (ch != Keys::Esc)
+	{
+		switch (ch)
+		{
+		case Keys::UpArrow:
+			position = mod(position - 5, userManager.filmManager.GetFilms().size()*5);
+			break;
+		case Keys::DownArrow:
+			position = mod(position + 5, userManager.filmManager.GetFilms().size()*5);
+			break;
+		case Keys::Enter:
+			GetTicketOnFilm(position/=5);
+			break;
+		default:
+			break;
+		}
+		for(int i=0; i<5; i++)console.DrawAttributeHorizontalLine(0, position + 1 + i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+	}
 }
 
-void ShowBusDb(BusDbContext* busDbContext, User*& user)
+void GetTicketOnFilm(int position)
 {
-    system("cls");
-    if (busDbContext != nullptr)
-    {
-        Bus* current = nullptr;
-        int choice;
-        while (true)
-        {
-            for (auto bus : busDbContext->Buses)
-            {
-                cout << "Номер автобуса: " << bus->BusNumber << "\n\t" << "Отсановки: " << bus->BusStationCount << endl;
-                for (auto station : bus->BusStations) cout << "\t" << station << endl;
-                cout << "\tВремя начала работы: " << bus->StartTime << endl << "Интервал работы: " << bus->dTime << endl;
-            }
-            cout << "\nВыход - esc" << endl;
-            if (user != nullptr)
-                if (user->Attributes)
-                {
-                    cout << endl << endl << "Изменить данные об автобусе - 1\nДобавить автобус - 2\nУдалить автобус - 3" << endl;
-                }
-            choice = _getch();
-            if (choice == 27) return;
-            if (user != nullptr)
-                if (user->Attributes)
-                {
-                    choice -= 48;
-                    if (choice > 3 || choice < 1) break;
-                    system("cls");
-                    switch (choice)
-                    {
-                    case 1:
-                        while (true)
-                        {
-                            cout << "Автобусы:" << endl;
-                            int counter = 0;
-                            for (auto bus : busDbContext->Buses)
-                            {
-                                cout << ++counter << ". " << bus->BusNumber << endl;
-                            }
-                            cout << endl << "0 - выход" << endl;
-                            int a;
-                            cin >> a;
-                            if (a == 0) return;
-                            auto bus_it = busDbContext->Buses.begin();
-                            for (int i = 0; i < a - 1; i++)
-                            {
-                                bus_it++;
-                            }
-                            CreateBus(current);
-                            if ((*bus_it) != nullptr)
-                            {
-                                *bus_it = current;
-                            }
-                            busDbContext->WriteObject();
-                            break;
-                        }
-                        ShowBusDb(busDbContext, user);
-                        return;
-                    case 2:
-                        CreateBus(current);
-                        busDbContext->Buses.push_back(current);
-                        busDbContext->BusCount++;
-                        busDbContext->WriteObject();
-                        return;
-                    case 3:
-                        cout << "Автобусы:" << endl;
-                        int counter = 0;
-                        for (auto bus : busDbContext->Buses)
-                        {
-                            cout << ++counter << ". " << bus->BusNumber << endl;
-                        }
-                        cout << endl << "0 - выход" << endl;
-                        int a;
-                        cin >> a;
-                        if (a == 0) return;
-                        auto bus_it = busDbContext->Buses.begin();
-                        for (int i = 0; i < a - 1; i++)
-                        {
-                            bus_it++;
-                        }
-                        if (*(bus_it) != nullptr) busDbContext->Buses.erase(bus_it);
-                        busDbContext->BusCount--;
-                        busDbContext->WriteObject();
-                        return;
-                    }
-                }
-        }
-    }
-    else {
-        cout << "База данных не найдена\nEsc - выход" << endl;
-        int a = _getch();
-        if (a == 27) return;
-    }
-}
+	system("cls");
+	auto film_it = userManager.filmManager.GetFilms().begin();
+	for (int i = 0; i < position; i++)
+	{
+		film_it++;
+	}
+	printf("Название:%s\n\tID:%d\n\tДата:%s\n\tВремя:%s\n\tЦена:%d руб\n\t", (*film_it).name, (*film_it).FilmId, (*film_it).data, (*film_it).time, (*film_it).cost, (*film_it).room);
+	printf("Купить билет\n\nEsc - выход");
+	while (_kbhit() == 0)
+	{
 
-void ShowUserDb(UserDbContext* userDbContext, User*& currentUser)
-{
-    system("cls");
-    if (userDbContext != nullptr)
-    {
-        int choice;
-        while (true)
-        {
-            for (auto user : userDbContext->Users)
-            {
-                cout << "Имя пользователя: " << user->Name << "\n\t" << "Роль: ";
-                if (user->Attributes) cout << "\t" << "админ";
-                else cout << "Пользователь";
-            }
-            cout << "\nВыход - esc" << endl;
-            if (currentUser != nullptr)
-                if (currentUser->Attributes)
-                {
-                    cout << endl << endl << "Назначить Админа - 1\nЛишить админки - 2\nУдалить Пользователя - 3" << endl;
-                }
-            choice = _getch();
-            if (choice == 27) return;
-            if (currentUser != nullptr)
-                if (currentUser->Attributes)
-                {
-                    choice -= 48;
-                    if (choice > 3 || choice < 1) break;
-                    system("cls");
-                    switch (choice)
-                    {
-                    case 1:
-                        while (true)
-                        {
-                            cout << "Пользователи:" << endl;
-                            int counter = 0;
-                            for (auto user : userDbContext->Users)
-                            {
-                                cout << ++counter << ". " << user->Name << endl;
-                            }
-                            cout << endl << "0 - выход" << endl;
-                            int a;
-                            cin >> a;
-                            if (a == 0) return;
-                            auto user_it = userDbContext->Users.begin();
-                            for (int i = 0; i < a - 1; i++)
-                            {
-                                user_it++;
-                            }
-                            (*(user_it))->Attributes = true;
-                            userDbContext->WriteObject();
-                            break;
-                        }
-                        ShowUserDb(userDbContext, currentUser);
-                        return;
-                    case 2:
-                        while (true)
-                        {
-                            cout << "Пользователи:" << endl;
-                            int counter = 0;
-                            for (auto user : userDbContext->Users)
-                            {
-                                cout << ++counter << ". " << user->Name << endl;
-                            }
-                            cout << endl << "0 - выход" << endl;
-                            int a;
-                            cin >> a;
-                            if (a == 0) return;
-                            auto user_it = userDbContext->Users.begin();
-                            for (int i = 0; i < a - 1; i++)
-                            {
-                                user_it++;
-                            }
-                            (*(user_it))->Attributes = false;
-                            userDbContext->WriteObject();
-                            break;
-                        }
-                        ShowUserDb(userDbContext, currentUser);
-                        return;
-                    case 3:
-                        while (true)
-                        {
-                            cout << "Пользователи:" << endl;
-                            int counter = 0;
-                            for (auto user : userDbContext->Users)
-                            {
-                                cout << ++counter << ". " << user->Name << endl;
-                            }
-                            cout << endl << "0 - выход" << endl;
-                            int a;
-                            cin >> a;
-                            if (a == 0) return;
-                            auto user_it = userDbContext->Users.begin();
-                            for (int i = 0; i < a - 1; i++)
-                            {
-                                user_it++;
-                            }
-                            userDbContext->Users.erase(user_it);
-                            userDbContext->UserCount--;
-                            userDbContext->WriteObject();
-                            break;
-                        }
-                        ShowUserDb(userDbContext, currentUser);
-                        return;
-                    }
-                }
-        }
-    }
-    else {
-        cout << "База данных не найдена\nEsc - выход" << endl;
-        int a = _getch();
-        if (a == 27) return;
-    }
+	}
+	char ch = _getch();
+	switch (ch)
+	{
+	case Keys::Enter:
+		if ((*film_it).BuyTicket())
+		{
+			userManager.currentUser->AddFilm((*film_it).FilmId);
+			system("cls");
+			printf("Успех\n\nEsc - выход");
+			while (_getch() != Keys::Esc);
+		}
+		else
+		{
+			system("cls");
+			printf("Сожалеем, билеты закончились\n\nEsc - выход");
+			while (_getch() != Keys::Esc);
+		}
+	}
 }

@@ -46,6 +46,7 @@ static void throw_exception(const char* _msg, void (*_ex_handler)(void*), uint16
     else if (_ex_flags & error_type::unknown_error)
     {
         fprintf(stdout, "\n\n\n\n\n\n\t\tUNKNOWN ERROR\nTRY TO SOLVE IT OR TREMINATE THE PROCESS\n\n\n\n\n\n\n\n");
+        fprintf(stdout, "%s", last_exception.msg_buff);
         terminate();
     }
     else
