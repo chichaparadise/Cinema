@@ -37,14 +37,14 @@ public:
         {
             for (auto film : this->filmList)
             {
-                if (film.data = date)
+                if (film.data == date)
                     _Responce.push_back(film);
             }
         }
         return _Responce;
     }
 
-    Film& SearchFilmById(int& filmId)
+    Film SearchFilmById(int& filmId)
     {
         for (auto film : filmList)
             if (film.FilmId == filmId)
@@ -59,7 +59,7 @@ public:
 
     inline char* ReturnFilmPlaces(const Film& film)
     {
-        return film.tickets;
+        return (char*)film.tickets;
     }
 
     bool DeleteFilm(int& filmId)
@@ -81,11 +81,11 @@ public:
         return false;
     }
 
-    bool AddFilm(const Film& film)
+    bool AddFilm(Film& film)
     {
         film.FilmId = currentFilmId++;
         for (auto _film : filmList)
-            if (film == _film)
+            if (film.FilmId == _film.FilmId)
                 return false;
         filmList.push_back(film);
         return true;
@@ -109,8 +109,8 @@ public:
                 Film* film = new Film();
                 stream >> film->name;
                 sum += crypto::stringSum(film->name);
-                stream >> film->date;
-                sum += crypto::stringSum(film->date);
+                stream >> film->data;
+                sum += crypto::stringSum(film->data);
                 stream >> film->time;
                 sum += crypto::stringSum(film->time);
                 stream >> film->tickets;
@@ -152,8 +152,8 @@ public:
             {
                 sum += crypto::stringSum(film.name);
                 stream << film.name << endl;
-                sum += crypto::stringSum(film.date);
-                stream << film.date << endl;
+                sum += crypto::stringSum(film.data);
+                stream << film.data << endl;
                 sum += crypto::stringSum(film.time);
                 stream << film.time << endl;
                 sum += crypto::stringSum(reinterpret_cast<char*>(film.tickets));
@@ -192,8 +192,8 @@ public:
                 Film* film = new Film();
                 in >> film->name;
                 sum += crypto::stringSum(film->name);
-                in >> film->date;
-                sum += crypto::stringSum(film->date);
+                in >> film->data;
+                sum += crypto::stringSum(film->data);
                 in >> film->time;
                 sum += crypto::stringSum(film->time);
                 in >> film->tickets;
@@ -231,8 +231,8 @@ public:
             {
                 sum += crypto::stringSum(film.name);
                 out << film.name << endl;
-                sum += crypto::stringSum(film.date);
-                out << film.date << endl;
+                sum += crypto::stringSum(film.data);
+                out << film.data << endl;
                 sum += crypto::stringSum(film.time);
                 out << film.time << endl;
                 sum += crypto::stringSum(reinterpret_cast<char*>(film.tickets));
@@ -255,7 +255,7 @@ public:
 
     static void FilmManagerHandler(void* _this)
     {
-        FilmManager* error_manager = _this;
+        FilmManager* error_manager = (FilmManager*)_this;
         if (last_exception.ex_flags & error_type::critical_error)
             return;
         if (last_exception.ex_flags & FILMDBREAD_EX)

@@ -60,6 +60,7 @@ void AuthorizedMenu(BusDbContext* busDbContext, UserDbContext* userDbContext, Us
             }
             break;
         default:
+        {
             break;
         }
         if (stop) break;

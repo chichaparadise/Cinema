@@ -17,7 +17,7 @@ typedef struct exception_entity_t
     void* this_arg;
     uint16_t ex_flags;
     char msg_buff[256];
-}exception_info;
+}Exception_info;
 
 typedef enum error_type_t
 {
@@ -27,7 +27,7 @@ typedef enum error_type_t
 
 static uint8_t program_condition = 0;
 
-static exception_info last_exception;
+static Exception_info last_exception;
 
 static void throw_exception(const char* _msg, void (*_ex_handler)(void*), uint16_t _ex_flags, void* _this)
 {
