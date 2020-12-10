@@ -52,8 +52,12 @@ public:
         for (auto _user : this->userList)
             if (_user.GetName() == name)
                 isUnique = false;
-        if(isUnique)
+        if (isUnique)
+        {
             this->userList.push_back(user);
+            return true;
+        }
+        return false;
     }
 
     inline void SetAttributes(User& user, const uint8_t& attributes)

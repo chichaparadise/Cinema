@@ -34,7 +34,7 @@ public:
 	{
 		SetConsoleCP(1251);
 		SetConsoleOutputCP(1251);
-		SetConsoleTitle(L"Кинотеатр");
+		SetConsoleTitle((LPCSTR)L"Кинотеатр");
 		this->xSize = 80;
 		this->ySize = 25;
 		stdoutHndl = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -46,7 +46,7 @@ public:
 	{
 		SetConsoleCP(1251);
 		SetConsoleOutputCP(1251);
-		SetConsoleTitle(L"Кинотеатр");
+		SetConsoleTitle((LPCSTR)L"Кинотеатр");
 		this->xSize = xSize;
 		this->ySize = ySize;
 		char buffer[40];
@@ -73,9 +73,9 @@ public:
 		return (bool)SetConsoleTextAttribute(this->stdoutHndl , WORD((bg << 4) | fg));
 	}	
 
-	WORD DrawAttributeHorizontalLine(int x, int y, int length, uint8_t bg, uint8_t fg)
+	DWORD DrawAttributeHorizontalLine(int x, int y, int length, uint8_t bg, uint8_t fg)
 	{
-		WORD res;
+		DWORD res;
 		WORD attr = WORD((bg << 4) | fg);
 		COORD crd;
 		crd.X = x;

@@ -35,13 +35,21 @@ public:
     inline bool SetAttributes(const uint8_t attributes, string& password)
     {
         if (this->IsPasswordValid(password))
+        {
             this->attributes = attributes;
+            return true;
+        }
+        return false;
     }
 
     inline bool SetName(const string& name, string& password)
     {
         if (this->IsPasswordValid(password))
+        {
             this->name = name;
+            return true;
+        }
+        return false;
     }
 
     inline bool hasAttributes(const uint8_t& attributes)
@@ -77,6 +85,11 @@ public:
         crypto::xorDecrypt(password);
         return res;
     } 
+
+    friend bool operator==(const User& lhs, const User& rhs)
+    {
+        return lhs.name == rhs.name;
+    }
 private:
     friend class UserManager;
     

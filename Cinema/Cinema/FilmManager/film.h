@@ -20,7 +20,7 @@ public:
     {
         this->tickets = new uint8_t[ROOM_CAPACITY + 1];
         memset(this->tickets, EMPTY_PLACE, ROOM_CAPACITY);
-        (char)this->tickets[ROOM_CAPACITY] = '\0';
+        ((char*)this->tickets)[ROOM_CAPACITY] = '\0';
     }
 
     Film(const int& filmId, const string& name, const string& data, const string& time, uint8_t room)
@@ -31,7 +31,7 @@ public:
         this->room = room;
         this->tickets = new uint8_t[ROOM_CAPACITY + 1];
         memset(this->tickets, EMPTY_PLACE, ROOM_CAPACITY);
-        (char)this->tickets[ROOM_CAPACITY] = '\0';
+        ((char*)this->tickets)[ROOM_CAPACITY] = '\0';
     }
 
     Film(const Film& another)
@@ -45,7 +45,7 @@ public:
         this->room = another.room;
         this->tickets = new uint8_t[ROOM_CAPACITY + 1];
         memcpy(this->tickets, another.tickets, ROOM_CAPACITY + 1);
-        (char)this->tickets[ROOM_CAPACITY] = '\0'; 
+        ((char*)this->tickets)[ROOM_CAPACITY] = '\0';
     }
 
     bool BuyTicket(int arrayOffset)
@@ -78,7 +78,7 @@ public:
 
     bool BuyTicket()
     {
-        char* _ptr = this->tickets;
+        char* _ptr = (char*)this->tickets;
         for (int i = 0; i < ROOM_CAPACITY; ++i)
         {
             if (*_ptr == EMPTY_PLACE)
@@ -91,7 +91,7 @@ public:
         return false;
     }
 
-    bool operator==(const Film& lhs, const Film& rhs)
+    friend bool operator==(const Film& lhs, const Film& rhs)
     {
         return lhs.FilmId == rhs.FilmId;
     }

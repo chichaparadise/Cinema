@@ -13,31 +13,45 @@ class base_entity
 public:
 	base_entity(char* const src)
 	{
+		this->connection_string = (char*)malloc(256);
+		memcpy(this->connection_string, src, strlen(src));
 		if (connection_string == NULL)
 			throw_exception("\nbase_entity(char* const src)\nsrc is NULL, terminating process", NULL, error_type::critical_error, NULL);
 		connection_string = src;
 		this->ReadObject();
 	}
 
-	virtual bool ReadObject();
-
-	virtual bool WriteObject();
-
-	virtual bool ReadObject(ofstream& in);
-
-	virtual bool WriteObject(ofstream& out);
-
-	friend ofstream& operator<<(ofstream& out, const base_entity& entity)
+	virtual bool ReadObject()
 	{
-		if (this->WriteObject(out) == true)
+		return false;
+	}
+
+	virtual bool WriteObject()
+	{
+		return false;
+	}
+
+	virtual bool ReadObject(ifstream& in)
+	{
+		return false;
+	}
+
+	virtual bool WriteObject(ofstream& out)
+	{
+		return false;
+	}
+
+	friend ofstream& operator<<(ofstream& out, base_entity& entity)
+	{
+		if (entity.WriteObject(out) == true)
 			return out;
 		throw_exception("\n friend ifstream& operator>>(ifstream& in, const base_entity& entity)\n cause exception, terminating process", NULL, error_type::critical_error, NULL);;
 		return out;
 	}
 
-	friend ifstream& operator>>(ifstream& in, const base_entity& entity)
+	friend ifstream& operator>>(ifstream& in, base_entity& entity)
 	{
-		if (this->ReadObject(in) == true)
+		if (entity.ReadObject(in) == true)
 			return in;
 		throw_exception("\n friend ifstream& operator>>(ifstream& in, const base_entity& entity)\n cause exception, terminating process", NULL, error_type::critical_error, NULL);
 		return in;	

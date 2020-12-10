@@ -11,7 +11,7 @@ using namespace std;
 
 FilmManager filmManager("films.dat");
 UserManager userManager("user.dat", filmManager);
-Console console(600, 400);
+Console console(600, 400); //Еьлан, мы чары кидаем
 
 void ShowUsers();
 void SelectUser(int);
@@ -45,12 +45,12 @@ void Start()
 		if (userManager.currentUser->hasAttributes(UserAttributes::Admin))
 		{
 			perms = 4;
-			printf("Добро пожаловать, %s!\n\tВыйти из учётной записи\n\tКупить билет\n\tРедактировать ,базу пользователей\n\tРедактировать базу фильмов\n\n\tEsc - выход", userManager.currentUser->GetName());
+			printf("Добро пожаловать, %s!\n\tВыйти из учётной записи\n\tКупить билет\n\tРедактировать ,базу пользователей\n\tРедактировать базу фильмов\n\n\tEsc - выход", userManager.currentUser->GetName().c_str());
 		}
 		else
 		{
 			perms = 2;
-			printf("Добро пожаловать, %s!\n\tВыйти из учётной записи\n\tКупить билет\n\n\tEsc - выход", userManager.currentUser->GetName());
+			printf("Добро пожаловать, %s!\n\tВыйти из учётной записи\n\tКупить билет\n\n\tEsc - выход", userManager.currentUser->GetName().c_str());
 		}
 		int position = 0;
 		while (_kbhit() == 0)
@@ -180,7 +180,7 @@ void BuyTicket()
 	printf("Доступные фильмы():");
 	for (auto film : userManager.filmManager.GetFilms())
 	{
-		printf("\n\t%s", film.name);
+		printf("\n\t%s", film.name.c_str());
 	}
 	printf("\n\n\tEsc - выход");
 	int position = 0;
@@ -194,10 +194,10 @@ void BuyTicket()
 		switch (ch)
 		{
 		case Keys::UpArrow:
-			position = mod(--position, userManager.filmManager.GetFilms().size());
+			position = mod(--position, (int)userManager.filmManager.GetFilms().size());
 			break;
 		case Keys::DownArrow:
-			position = mod(++position, userManager.filmManager.GetFilms().size());
+			position = mod(++position, (int)userManager.filmManager.GetFilms().size());
 			break;
 		case Keys::Enter:
 			GetTicketOnFilm(position);
@@ -217,7 +217,7 @@ void GetTicketOnFilm(int position)
 	{
 		film_it++;
 	}
-	printf("Название:%s\n\tID:%d\n\tДата:%s\n\tВремя:%s\n\tЦена:%d руб\n\t", (*film_it).name, (*film_it).FilmId, (*film_it).data, (*film_it).time, (*film_it).cost, (*film_it).room);
+	printf("Название:%s\n\tID:%d\n\tДата:%s\n\tВремя:%s\n\tЦена:%d руб\n\tЗал:%d\n\t", (*film_it).name.c_str(), (*film_it).FilmId, (*film_it).data.c_str(), (*film_it).time.c_str(), (*film_it).cost, (*film_it).room);
 	printf("Купить билет\n\nEsc - выход");
 	while (_kbhit() == 0)
 	{
@@ -253,7 +253,7 @@ void ShowUsers()
 	printf("Имя пользователя:");
 	for (auto user : userManager.userList)
 	{
-		printf("\n\t%s", user.GetName());
+		printf("\n\t%s", user.GetName().c_str());
 	}
 	printf("\n\nDelete - удалить\nEsc - выход");
 	int position = 0;
@@ -264,16 +264,16 @@ void ShowUsers()
 	char ch = _getch();
 	while (ch != Keys::Esc)
 	{
+		auto user_it = userManager.userList.begin();
 		switch (ch)
 		{
 		case Keys::UpArrow:
-			position = mod(--position, userManager.userList.size());
+			position = mod(--position, (int)userManager.userList.size());
 			break;
 		case Keys::DownArrow:
-			position = mod(++position, userManager.userList.size());
+			position = mod(++position, (int)userManager.userList.size());
 			break;
 		case Keys::Delete:
-			auto user_it = userManager.userList.begin();
 			for (int i = 0; i < position; i++)
 			{
 				user_it++;
@@ -297,7 +297,7 @@ void SelectUser(int pos)
 	{
 		user_it++;
 	}
-	printf("Имя пользователя\n", (*user_it).GetName());
+	printf("Имя пользователя: %s\n", (*user_it).GetName().c_str());
 	if ((*user_it).hasAttributes(UserAttributes::Admin))
 		printf("Admin\n");
 	else
@@ -307,7 +307,7 @@ void SelectUser(int pos)
 	printf("Фильмы:");
 	for (auto filmID : (*user_it).GetFilms()) {
 		auto film = userManager.filmManager.SearchFilmById(filmID);
-		printf("\n\tНазвание:%s\n\t\tID:%d\n\t\tДата:%s\n\t\tВремя:%s\n\t\tЦена:%d руб", film.name, film.FilmId, film.data, film.time, film.cost, film.room); \
+		printf("\n\tНазвание:%s\n\t\tID:%d\n\t\tДата:%s\n\t\tВремя:%s\n\t\tЦена:%d руб\n\t\tЗал:%d", film.name.c_str(), film.FilmId, film.data.c_str(), film.time.c_str(), film.cost, film.room);
 	}
 	printf("\n\nEsc - выход");
 	int position = 0;
@@ -435,7 +435,7 @@ void SelectUser(int pos)
 				printf("Фильмы:");
 				for (auto filmID : (*user_it).GetFilms()) {
 					auto film = userManager.filmManager.SearchFilmById(filmID);
-					printf("\n%s", film.name);
+					printf("\n%s", film.name.c_str());
 				}
 				printf("\nEnter - удалить\n\nEsc - выход");
 					int position = 0;
@@ -449,10 +449,10 @@ void SelectUser(int pos)
 						switch (ch)
 						{
 						case Keys::UpArrow:
-							position = mod(--position, (*user_it).GetFilms().size());
+							position = mod(--position, (int)(*user_it).GetFilms().size());
 							return;
 						case Keys::DownArrow:
-							position = mod(++position, (*user_it).GetFilms().size());
+							position = mod(++position, (int)(*user_it).GetFilms().size());
 							return;
 						case Keys::Enter:
 							auto film_it = (*user_it).GetFilms().begin();
@@ -480,7 +480,7 @@ void ShowFilms()
 	printf("Название фильма:");
 	for (auto film : userManager.filmManager.GetFilms())
 	{
-		printf("\n\t%s", film.name);
+		printf("\n\t%s", film.name.c_str());
 	}
 	printf("\n\nDelete - удалить\nEsc - выход");
 	int position = 0;
@@ -491,16 +491,16 @@ void ShowFilms()
 	char ch = _getch();
 	while (ch != Keys::Esc)
 	{
+		auto film_it = userManager.filmManager.GetFilms().begin();
 		switch (ch)
 		{
 		case Keys::UpArrow:
-			position = mod(--position, userManager.filmManager.GetFilms().size());
+			position = mod(--position, (int)userManager.filmManager.GetFilms().size());
 			break;
 		case Keys::DownArrow:
-			position = mod(++position, userManager.filmManager.GetFilms().size());
+			position = mod(++position, (int)userManager.filmManager.GetFilms().size());
 			break;
 		case Keys::Delete:
-			auto film_it = userManager.filmManager.GetFilms().begin();
 			for (int i = 0; i < position; i++)
 			{
 				film_it++;
@@ -527,7 +527,7 @@ void SelectFilm(int pos)
 		film_it++;
 	}
 	printf("Фильмы:");
-	printf("\n\tНазвание:%s\n\t\tID:%d\n\t\tДата:%s\n\t\tВремя:%s\n\t\tЦена:%d руб", (*film_it).name, (*film_it).FilmId, (*film_it).data, (*film_it).time, (*film_it).cost, (*film_it).room);
+	printf("\n\tНазвание:%s\n\t\tID:%d\n\t\tДата:%s\n\t\tВремя:%s\n\t\tЦена:%d руб\n\t\tЗал:%d", (*film_it).name.c_str(), (*film_it).FilmId, (*film_it).data.c_str(), (*film_it).time.c_str(), (*film_it).cost, (*film_it).room);
 	printf("\n\nEsc - выход");
 	int position = 0;
 	while (_kbhit() == 0)
@@ -546,11 +546,13 @@ void SelectFilm(int pos)
 			position = mod(++position, 5);
 			break;
 		case Keys::Enter:
+			string name;
+			string date;
+			string time;
 			switch (position)
 			{
 			case 0:
 				system("cls");
-				string name;
 				printf("Введите новое название:\n");
 				::cin >> name;
 				(*film_it).name = name;
@@ -562,7 +564,6 @@ void SelectFilm(int pos)
 				return;
 			case 2:
 				system("cls");
-				string date;
 				while (true)
 				{
 					printf("Введите новую дату:\n");
@@ -577,7 +578,6 @@ void SelectFilm(int pos)
 				}
 			case 3:
 				system("cls");
-				string time;
 				while (true)
 				{
 					printf("Введите новое время:\n");

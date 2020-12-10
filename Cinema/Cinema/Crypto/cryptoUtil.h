@@ -15,7 +15,7 @@ namespace crypto
     static string& xorEncrypt(string& str, uint64_t& key = crypto::_key)
     {
         char* key_array = reinterpret_cast<char*>(key);
-        int len = str.length();
+        int len = (int)str.length();
         for (size_t i = 0; i < CRYPTO_KEY_SIZE; ++i)
             str[i] ^= key_array[i % CRYPTO_KEY_SIZE];
         return str;
@@ -25,7 +25,7 @@ namespace crypto
     {
         string str(_str);
         char* key_array = reinterpret_cast<char*>(key);
-        int len = str.length();
+        int len = (int)str.length();
         for (size_t i = 0; i < CRYPTO_KEY_SIZE; ++i)
             str[i] ^= key_array[i % CRYPTO_KEY_SIZE];
         return str;
@@ -34,7 +34,7 @@ namespace crypto
     static string& xorDecrypt(string& str, uint64_t& key = crypto::_key)
     {
         char* key_array = reinterpret_cast<char*>(key);
-        int len = str.length();
+        int len = (int)str.length();
         for (size_t i = 0; i < CRYPTO_KEY_SIZE; ++i)
             str[i] ^= key_array[i % CRYPTO_KEY_SIZE];
         return str;
