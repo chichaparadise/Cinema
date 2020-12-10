@@ -21,6 +21,16 @@ namespace crypto
         return str;
     } 
 
+    static string& xorEncrypt(const char* _str, uint64_t& key = crypto::_key)
+    {
+        string str(_str);
+        char* key_array = reinterpret_cast<char*>(key);
+        int len = str.length();
+        for (size_t i = 0; i < CRYPTO_KEY_SIZE; ++i)
+            str[i] ^= key_array[i % CRYPTO_KEY_SIZE];
+        return str;
+    }
+
     static string& xorDecrypt(string& str, uint64_t& key = crypto::_key)
     {
         char* key_array = reinterpret_cast<char*>(key);

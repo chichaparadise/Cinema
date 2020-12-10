@@ -19,13 +19,13 @@ public:
 		this->ReadObject();
 	}
 
-	virtual bool ReadObject() = 0;
+	virtual bool ReadObject();
 
-	virtual bool WriteObject() = 0;
+	virtual bool WriteObject();
 
-	virtual bool ReadObject(ofstream& in) = 0;
+	virtual bool ReadObject(ofstream& in);
 
-	virtual bool WriteObject(ofstream& out) = 0;
+	virtual bool WriteObject(ofstream& out);
 
 	friend ofstream& operator<<(ofstream& out, const base_entity& entity)
 	{

@@ -15,6 +15,11 @@
 class FilmManager : base_entity
 {
 public:
+    FilmManager() : base_entity((char*)"NULL")
+    {
+
+    }
+
     FilmManager(const string& path) : base_entity((char*)path.c_str())
     {
     }

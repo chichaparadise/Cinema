@@ -20,8 +20,9 @@ public:
 
     list<User> userList;
 public:
-    UserManager(string str) : base_entity((char*)str.c_str())
+    UserManager(string str, FilmManager& filmManager) : base_entity((char*)str.c_str())
     {
+        this->filmManager = filmManager;
     }
 
     bool Authorise(string& name, string& password)
@@ -163,30 +164,30 @@ public:
         if (in.is_open())
         {
             int size;
-            in >> size;
+            in << size;
             for (int i = 0; i < size; ++i)
             {
                 User* user = new User();
-                in >> user->name;
+                in << user->name;
                 sum += crypto::stringSum(user->name);
-                in >> user->cryptedPassword;
+                in << user->cryptedPassword;
                 sum += crypto::stringSum(user->cryptedPassword);
-                in >> user->attributes;
+                in << user->attributes;
                 sum += user->attributes;
                 int filmSize;
-                in >> filmSize;
+                in << filmSize;
                 sum += filmSize;
                 for (int j = 0; j < filmSize; ++j)
                 {
                     int filmID;
-                    in >> filmID;
+                    in << filmID;
                     sum += filmID;
                     user->filmList.push_back(filmID);
                 }
                 this->userList.push_back(*user);
                 delete user;
             }
-            in >> fileSum;
+            in << fileSum;
             if (fileSum == sum)
                 return true;
             throw_exception("Invalid input file sum, object created from scratch", UserManager::UserManagerHandler, READING_EXCEPTION, (void*)this);
@@ -227,12 +228,14 @@ public:
 
     static void UserManagerHandler(void* _this)
     {
-        UserManager* error_manager = _this;
+        UserManager* error_manager = (UserManager * )_this;
         if (last_exception.ex_flags & error_type::critical_error)
             return;
         if (last_exception.ex_flags & READING_EXCEPTION)
         {
-            User Admin = User("Admin", crypto::xorEncrypt("Admin"), UserAttributes::Admin, list<int>());
+            string name = "Admin Admin";
+            list<int> list;
+            User Admin(name, crypto::xorEncrypt("Password"), UserAttributes::Admin, list);
             error_manager->userList.clear();
             error_manager->userList.push_front(Admin);
             error_manager->currentUser = &error_manager->userList.front(); 
