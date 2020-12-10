@@ -95,6 +95,11 @@ public:
    		curs.bVisible = TRUE;
 		SetConsoleCursorInfo(this->stdoutHndl, &curs);
 	}
+
+	COORD GetCurrentCoords()
+	{
+		return cursor;
+	}
 private:
 	COORD cursor;
 
