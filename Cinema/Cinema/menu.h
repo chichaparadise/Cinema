@@ -12,7 +12,8 @@ typedef enum _keys_t
 	RightArrow = 77,
 	LeftArrow = 75,
 	Esc = 27,
-	Enter = 13
+	Enter = 13,
+	Delete = 83
 }Keys;
 
 class Menu
