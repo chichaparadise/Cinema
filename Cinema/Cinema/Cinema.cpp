@@ -14,6 +14,15 @@ UserManager userManager("user.dat", filmManager);
 Console console(600, 400);
 
 void ShowUsers();
+void SelectUser(int);
+void ShowFilms();
+void SelectFilm(int);
+void Authorisation();
+void Registration();
+void BuyTicket();
+void GetTicketOnFilm(int);
+void Start();
+int mod(int, int);
 
 int main()
 {
@@ -72,7 +81,7 @@ void Start()
 					if(userManager.currentUser->hasAttributes(UserAttributes::Admin)) ShowUsers();
 					return;
 				case 3:
-					if (userManager.currentUser->hasAttributes(UserAttributes::Admin) ShowFilms();
+					if (userManager.currentUser->hasAttributes(UserAttributes::Admin)) ShowFilms();
 					return;
 				default:
 					throw_exception("Unexpected cursor position", NULL, error_type::unknown_error, NULL);
@@ -275,18 +284,16 @@ void ShowUsers()
 		case Keys::Enter:
 			SelectUser(position);
 			return;
-		default:
-			break;
 		}
 		console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
 	}
 }
 
-void SelectUser(int position)
+void SelectUser(int pos)
 {
 	system("cls");
 	auto user_it = userManager.userList.begin();
-	for (int i = 0; i < position; i++)
+	for (int i = 0; i < pos; i++)
 	{
 		user_it++;
 	}
@@ -511,11 +518,11 @@ void ShowFilms()
 	}
 }
 
-void SelectFilm(int position)
+void SelectFilm(int pos)
 {
 	system("cls");
 	auto film_it = userManager.filmManager.GetFilms().begin();
-	for (int i = 0; i < position; i++)
+	for (int i = 0; i < pos; i++)
 	{
 		film_it++;
 	}
@@ -595,8 +602,6 @@ void SelectFilm(int position)
 					return;
 				}
 			}
-		default:
-			break;
 		}
 		console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
 	}
