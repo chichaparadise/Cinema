@@ -153,6 +153,10 @@
     <ClInclude Include="UserManager\UserManager.h" />
     <ClInclude Include="Validator\validation.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="films.dat" />
+    <None Include="users.dat" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

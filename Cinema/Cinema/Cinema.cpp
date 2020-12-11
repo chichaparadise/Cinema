@@ -1,17 +1,26 @@
 ﻿#include <iostream>
+#include <regex>
+
+std::regex fioPattern_eng("^([A-Z])([a-z]*)\\s([A-Z])([a-z]*)$");
+std::regex fioPattern_rus("^[А-Я]([а-я]*)\\s[А-Я]([а-я]*)$");
+
 #include <conio.h>
 #include <Windows.h>
+#include <locale>
+#include <clocale>
 #include "FilmManager\filmManager.h"
 #include "UserManager\UserManager.h"
 #include "consoleUtills\consoleUtils.h"
 #include "menu.h"
 #include "Crypto\cryptoUtil.h"
 
+
 using namespace std;
 
-FilmManager filmManager("films.dat");
-UserManager userManager("user.dat", filmManager);
-Console console(600, 400); //Еьлан, мы чары кидаем
+
+FilmManager filmManager;
+UserManager userManager;
+Console console; //Еьлан, мы чары кидаем
 
 void ShowUsers();
 void SelectUser(int);
@@ -26,7 +35,15 @@ int mod(int, int);
 
 int main()
 {
-    Menu menu();
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+	setlocale(LC_ALL, "Rus");
+	std::setlocale(LC_ALL, ""); // for C and C++ where synced with stdio
+	std::locale::global(std::locale("")); // for C++
+	std::cout.imbue(std::locale());
+	filmManager = FilmManager("films.dat");
+	userManager = UserManager("users.dat", filmManager);
+    //Menu menu();
 	while (true) Start();
     return 0;
 }
@@ -39,6 +56,7 @@ int mod(int a, int b)
 
 void Start()
 {
+	system("cls");
 	if (userManager.currentUser != nullptr)
 	{
 		int perms;
@@ -152,10 +170,10 @@ void Authorisation()
 		system("cls");
 		printf("Введите имя пользователя:\n");
 		string name;
-		::cin >> name;
+		getline(cin, name);
 		printf("Введите пароль:\n");
 		string password;
-		::cin >> password;
+		getline(cin, password);
 		if (!userManager.Authorise(name, password))
 		{
 			printf("Неверные данные\n\nEsc - возврат");
@@ -165,27 +183,31 @@ void Authorisation()
 
 void Registration()
 {
+	Validator val;
 	system("cls");
 	bool isValid = false;
 	string name, password;
 	while (true) {
 		printf("Введите имя пользователя:\n");
-		::cin >> name;
-		isValid = Validator::isNameValid(name);
+		getline(cin, name);
+		isValid = val.isNameValid(name);
 		if (!isValid) printf("Введенные данные не корректны\n\n");
 		else break;
 	}
 	isValid = false;
 	printf("Введите пароль:\n");
-	::cin >> password;
+	getline(cin, password);
 	crypto::xorEncrypt(password, crypto::_key);
 	list<int> films;
 	User user;
 	if(userManager.userList.size() == 0) user = User(name, password, UserAttributes::Admin, films);
 	else user = User(name, password, NULL, films);
-	userManager.AddUser(user);
-	userManager.currentUser = &user;
-	userManager.WriteObject();
+	if (userManager.AddUser(user) == true)
+	{
+		userManager.currentUser = &*userManager.userList.rbegin();
+		userManager.WriteObject();
+	}
+	else Registration();
 }
 
 void BuyTicket()
@@ -327,13 +349,14 @@ void ShowUsers()
 
 void SelectUser(int pos)
 {
+	Validator val;
 	system("cls");
 	auto user_it = userManager.userList.begin();
 	for (int i = 0; i < pos; i++)
 	{
 		user_it++;
 	}
-	printf("Имя пользователя: %s\n", (*user_it).GetName().c_str());
+	printf("Имя пользователя:\n %s\n", (*user_it).GetName().c_str());
 	if ((*user_it).hasAttributes(UserAttributes::Admin))
 		printf("Admin\n");
 	else
@@ -380,11 +403,11 @@ void SelectUser(int pos)
 				{
 					printf("Введите новое имя:\n");
 					string name, password;
-					::cin >> name;
-					if (Validator::isNameValid(name))
+					getline(cin, name);
+					if (val.isNameValid(name))
 					{
 						printf("Подтвердите пароль:\n");
-						::cin >> password;
+						getline(cin, password);
 						if ((*user_it).SetName(name, password))
 						{
 							userManager.WriteObject();
@@ -426,9 +449,10 @@ void SelectUser(int pos)
 						case Keys::Enter:
 							string password;
 							printf("Подтвердите пароль:\n");
-							::cin >> password;
+							cin.ignore();
+							getline(cin, password);
 							if (position == 0)
-								if ((*user_it).SetAttributes(UserAttributes::Admin, password))
+								if ((*user_it).SetAttributes(UserAttributes::Admin, crypto::xorDecrypt(password))
 								{
 									userManager.WriteObject();
 									return;
@@ -569,6 +593,18 @@ void ShowFilms()
 		case Keys::Enter:
 			SelectFilm(position);
 			return;
+		/*case 'A':
+			CreateFilm();
+			return;
+		case 'a':
+			CreateFilm();
+			return;
+		case 'ф':
+			CreateFilm();
+			return;
+		case 'Ф':
+			CreateFilm();
+			return;*/
 		case Keys::Esc:
 			return;
 		default:
@@ -621,7 +657,7 @@ void SelectFilm(int pos)
 			case 0:
 				system("cls");
 				printf("Введите новое название:\n");
-				::cin >> name;
+				getline(cin, name);
 				(*film_it).name = name;
 				userManager.filmManager.WriteObject();
 				return;
@@ -634,7 +670,8 @@ void SelectFilm(int pos)
 				while (true)
 				{
 					printf("Введите новую дату:\n");
-					::cin >> name;
+					cin.ignore();
+					getline(cin, date);
 					if (Validator::isDataValid(date))
 					{
 						(*film_it).data = date;
@@ -648,7 +685,8 @@ void SelectFilm(int pos)
 				while (true)
 				{
 					printf("Введите новое время:\n");
-					::cin >> time;
+					cin.ignore();
+					getline(cin, time);
 					if (Validator::isTimeValid(time))
 					{
 						(*film_it).time = time;
@@ -663,6 +701,7 @@ void SelectFilm(int pos)
 				while (true)
 				{
 					printf("Введите новую цену:\n");
+					cin.ignore();
 					::cin >> cost;
 					(*film_it).cost = cost;
 					userManager.filmManager.WriteObject();

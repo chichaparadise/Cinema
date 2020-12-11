@@ -24,7 +24,7 @@ public:
         this->attributes = 0;
     }
 
-    User(string& name, string& crypted_password, const uint8_t& attributes, const list<int>& filmList)
+    User(string& name, string crypted_password, const uint8_t& attributes, const list<int>& filmList)
     {
         this->attributes = attributes;
         this->cryptedPassword = crypted_password;

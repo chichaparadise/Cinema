@@ -20,20 +20,31 @@ public:
 
     list<User> userList;
 public:
+    UserManager() : base_entity((char*)"NULL")
+    {
+
+    }
+
     UserManager(string str, FilmManager& filmManager) : base_entity((char*)str.c_str())
     {
         this->filmManager = filmManager;
+        if (this->ReadObject() == true)
+            this->currentUser = nullptr;
     }
 
     bool Authorise(string& name, string& password)
     {
-        for (auto user : this->userList)
+        for (auto user  = this->userList.begin(); user != this->userList.end(); ++user)
         {
-            if (user.GetName() == name)
-                if (user.IsPasswordValid(password))
+            if ((*user).GetName() == name)
+                if ((*user).IsPasswordValid(password))
                 {
-                    this->currentUser = &user;
-                    return true;
+                    if (!(*user).hasAttributes(UserAttributes::Blocked))
+                    {
+                        this->currentUser = &(*user);
+                        return true;
+                    }
+                    return false;
                 }
         }
         return false;
@@ -84,10 +95,10 @@ public:
         return false;
     }
 
-    bool ReadObject()
+    bool ReadObject() override
     {
         uint64_t sum = 0;
-        uint64_t fileSum = 0;
+        uint64_t fileSum = -1;
         ifstream stream;
         stream.open(this->connection_string, ios::binary | ios::in);
         if (stream.is_open())
@@ -96,10 +107,14 @@ public:
             stream >> size;
             for (int i = 0; i < size; ++i)
             {
+                char buffer[256];
+                stream.ignore();
                 User* user = new User();
-                stream >> user->name;
+                stream.getline(buffer, 256, '\n');
+                user->name = buffer;
                 sum += crypto::stringSum(user->name);
-                stream >> user->cryptedPassword;
+                stream.getline(buffer, 256, '\n');
+                user->cryptedPassword = buffer;
                 sum += crypto::stringSum(user->cryptedPassword);
                 stream >> user->attributes;
                 sum += user->attributes;
@@ -128,7 +143,7 @@ public:
         return false;
     }
 
-    bool WriteObject()
+    bool WriteObject() override
     {
         uint64_t sum = 0;
         ofstream stream;
@@ -161,7 +176,7 @@ public:
         return false;
     }
 
-    bool ReadObject(ofstream& in)
+    bool ReadObject(ofstream& in) 
     {
         uint64_t sum = 0;
         uint64_t fileSum = 0;

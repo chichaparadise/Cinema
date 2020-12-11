@@ -6,6 +6,8 @@
 #include "stdio.h"
 #include "corecrt_terminate.h"
 
+char* s = setlocale(LC_ALL, "Rus");
+
 #define TERMINATE 1
 #define CALL_HANDLING 2
 

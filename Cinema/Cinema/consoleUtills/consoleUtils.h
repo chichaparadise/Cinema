@@ -32,9 +32,8 @@ class Console
 public:
 	Console()
 	{
-		SetConsoleCP(1251);
-		SetConsoleOutputCP(1251);
-		SetConsoleTitle((LPCSTR)L"Кинотеатр");
+		
+		SetConsoleTitle("Кинотеатр");
 		this->xSize = 80;
 		this->ySize = 25;
 		stdoutHndl = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -44,9 +43,8 @@ public:
 
 	Console(uint8_t xSize, uint8_t ySize)
 	{
-		SetConsoleCP(1251);
-		SetConsoleOutputCP(1251);
-		SetConsoleTitle((LPCSTR)L"Кинотеатр");
+		
+		SetConsoleTitle("Кинотеатр");
 		this->xSize = xSize;
 		this->ySize = ySize;
 		char buffer[40];

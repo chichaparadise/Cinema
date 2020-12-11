@@ -17,11 +17,11 @@ class FilmManager : base_entity
 public:
     FilmManager() : base_entity((char*)"NULL")
     {
-
     }
 
     FilmManager(const string& path) : base_entity((char*)path.c_str())
     {
+        this->ReadObject();
     }
 
     list<Film> SearchFilmsByName(string name_pattern)
@@ -105,7 +105,7 @@ public:
     bool ReadObject()
     {
         uint64_t sum = 0;
-        uint64_t fileSum = 0;
+        uint64_t fileSum = -1;
         ifstream stream;
         stream.open(this->connection_string, ios::binary | ios::in);
         if (stream.is_open())
@@ -117,12 +117,17 @@ public:
             sum += size;
             for (int i = 0; i < size; ++i)
             {
+                stream.ignore();
+                char buffer[256];
                 Film* film = new Film();
-                stream >> film->name;
+                stream.getline(buffer, 256, '\n');
+                film->name = buffer;
                 sum += crypto::stringSum(film->name);
-                stream >> film->data;
+                stream.getline(buffer, 256, '\n');
+                film->data = buffer;
                 sum += crypto::stringSum(film->data);
-                stream >> film->time;
+                stream.getline(buffer, 256, '\n');
+                film->time = buffer;
                 sum += crypto::stringSum(film->time);
                 stream >> film->tickets;
                 sum += crypto::stringSum(reinterpret_cast<char*>(film->tickets));
@@ -142,6 +147,7 @@ public:
             if (sum == fileSum)
                 return true;
             throw_exception("file open exception, try to resolve exception", FilmManager::FilmManagerHandler, FILMDBREAD_EX, (void*)this);
+            return false;
         }
         throw_exception("file open exception, terminating process", FilmManager::FilmManagerHandler, FILMDBREAD_EX | error_type::critical_error, (void*)this);
         stream.close();
@@ -224,6 +230,7 @@ public:
             if (sum == fileSum)
                 return true;
             throw_exception("file open exception, try to resolve exception", FilmManager::FilmManagerHandler, FILMDBREAD_EX, (void*)this);
+            return false;
         }
         throw_exception("file open exception, terminating process", FilmManager::FilmManagerHandler, FILMDBREAD_EX | error_type::critical_error, (void*)this);
         return false;

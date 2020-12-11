@@ -12,31 +12,40 @@ namespace crypto
 {
     static uint64_t _key = 0xa5fd316c45b93211;
 
-    static string& xorEncrypt(string& str, uint64_t& key = crypto::_key)
+    static string xorEncrypt(string& str, uint64_t& key = crypto::_key)
     {
-        char* key_array = reinterpret_cast<char*>(key);
+        char* key_array = reinterpret_cast<char*>(&key);
         int len = (int)str.length();
-        for (size_t i = 0; i < CRYPTO_KEY_SIZE; ++i)
-            str[i] ^= key_array[i % CRYPTO_KEY_SIZE];
+        for (size_t i = 0; i < len; ++i)
+        {
+            char _test = str[i] ^ key_array[i % CRYPTO_KEY_SIZE];
+            str[i] = _test == '\0' ? str[i] : str[i] ^ key_array[i % CRYPTO_KEY_SIZE];
+        }
         return str;
     } 
 
-    static string& xorEncrypt(const char* _str, uint64_t& key = crypto::_key)
+    static string xorEncrypt(const char* _str, uint64_t& key = crypto::_key)
     {
         string str(_str);
-        char* key_array = reinterpret_cast<char*>(key);
+        char* key_array = reinterpret_cast<char*>(&key);
         int len = (int)str.length();
-        for (size_t i = 0; i < CRYPTO_KEY_SIZE; ++i)
-            str[i] ^= key_array[i % CRYPTO_KEY_SIZE];
+        for (size_t i = 0; i < len; ++i)
+        {
+            char _test = str[i] ^ key_array[i % CRYPTO_KEY_SIZE];
+            str[i] = _test == '\0' ? str[i] : str[i] ^ key_array[i % CRYPTO_KEY_SIZE];
+        }
         return str;
     }
 
-    static string& xorDecrypt(string& str, uint64_t& key = crypto::_key)
+    static string xorDecrypt(string& str, uint64_t& key = crypto::_key)
     {
-        char* key_array = reinterpret_cast<char*>(key);
+        char* key_array = reinterpret_cast<char*>(&key);
         int len = (int)str.length();
-        for (size_t i = 0; i < CRYPTO_KEY_SIZE; ++i)
-            str[i] ^= key_array[i % CRYPTO_KEY_SIZE];
+        for (size_t i = 0; i < len; ++i)
+        {
+            char _test = str[i] ^ key_array[i % CRYPTO_KEY_SIZE];
+            str[i] = _test == '\0' ? str[i] : str[i] ^ key_array[i % CRYPTO_KEY_SIZE];
+        }
         return str;
     }
 

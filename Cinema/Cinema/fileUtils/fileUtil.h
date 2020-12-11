@@ -14,11 +14,17 @@ public:
 	base_entity(char* const src)
 	{
 		this->connection_string = (char*)malloc(256);
-		memcpy(this->connection_string, src, strlen(src));
+		memcpy(this->connection_string, src, strlen(src)+1);
 		if (connection_string == NULL)
 			throw_exception("\nbase_entity(char* const src)\nsrc is NULL, terminating process", NULL, error_type::critical_error, NULL);
-		connection_string = src;
-		this->ReadObject();
+	}
+
+	base_entity(const base_entity& another)
+	{
+		this->connection_string = (char*)malloc(256);
+		memcpy(this->connection_string, another.connection_string, strlen(another.connection_string) + 1);
+		if (connection_string == NULL)
+			throw_exception("\nbase_entity(char* const src)\nsrc is NULL, terminating process", NULL, error_type::critical_error, NULL);
 	}
 
 	virtual bool ReadObject()

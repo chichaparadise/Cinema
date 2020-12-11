@@ -53,8 +53,6 @@ public:
     */
     static bool isNameValid(string str)
     {
-        regex fioPattern_eng("^([A-Z])([a-z]*)\\s([A-Z])([a-z]*)$");
-        regex fioPattern_rus("^[А-Я]([а-я]*)\\s[А-Я]([а-я]*)$");
         return regex_match(str, fioPattern_eng) || regex_match(str, fioPattern_rus);
     }
     /*
