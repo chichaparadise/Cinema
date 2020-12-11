@@ -57,9 +57,10 @@ void Start()
 		{
 
 		}
-		char ch = _getch();
-		while (ch != Keys::Esc)
+		char ch;
+		while (true)
 		{
+			ch = _getch();
 			switch (ch)
 			{
 			case Keys::UpArrow:
@@ -87,10 +88,16 @@ void Start()
 					throw_exception("Unexpected cursor position", NULL, error_type::unknown_error, NULL);
 				}
 				break;
+			case Keys::Esc:
+				exit(0);
 			default:
 				break;
 			}
-			console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+			for (int i = 0; i < console.ySize; i++)
+			{
+				if (i == position + 1)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+				else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+			}
 		}
 	}
 	else
@@ -101,9 +108,10 @@ void Start()
 		{
 
 		}
-		char ch = _getch();
-		while (ch != Keys::Esc)
+		char ch;
+		while (true)
 		{
+			ch = _getch();
 			switch (ch)
 			{
 			case Keys::UpArrow:
@@ -125,10 +133,16 @@ void Start()
 					throw_exception("Unexpected cursor position", NULL, error_type::unknown_error, NULL);
 				}
 				break;
+			case Keys::Esc:
+				exit(0);
 			default:
 				break;
 			}
-			console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+			for (int i = 0; i < console.ySize; i++)
+			{
+				if(i == position + 1)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+				else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+			}
 		}
 	}
 }
@@ -158,7 +172,7 @@ void Registration()
 		printf("Введите имя пользователя:\n");
 		::cin >> name;
 		isValid = Validator::isNameValid(name);
-		if (!isValid) printf("Введенные данные не корректны\n");
+		if (!isValid) printf("Введенные данные не корректны\n\n");
 		else break;
 	}
 	isValid = false;
@@ -188,9 +202,10 @@ void BuyTicket()
 	{
 
 	}
-	char ch = _getch();
-	while (ch != Keys::Esc)
+	char ch;
+	while (true)
 	{
+		ch = _getch();
 		switch (ch)
 		{
 		case Keys::UpArrow:
@@ -202,10 +217,16 @@ void BuyTicket()
 		case Keys::Enter:
 			GetTicketOnFilm(position);
 			return;
+		case Keys::Esc:
+			return;
 		default:
 			break;
 		}
-		console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+		for (int i = 0; i < console.ySize; i++)
+		{
+			if (i == position + 1)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+			else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+		}
 	}
 }
 
@@ -224,26 +245,34 @@ void GetTicketOnFilm(int position)
 
 	}
 	char ch = _getch();
-	switch (ch)
+	for (int i = 0; i < console.ySize; i++)
 	{
-	case Keys::Enter:
-		if ((*film_it).BuyTicket())
+		if (i == 6)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+		else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+	}
+	while (true)
+	{
+		switch (ch)
 		{
-			userManager.currentUser->AddFilm((*film_it).FilmId);
-			system("cls");
-			printf("Успех\n\nEsc - выход");
-			while (_getch() != Keys::Esc);
+		case Keys::Enter:
+			if ((*film_it).BuyTicket())
+			{
+				userManager.currentUser->AddFilm((*film_it).FilmId);
+				system("cls");
+				printf("Успех\n\nEsc - выход");
+				while (_getch() != Keys::Esc);
+				return;
+			}
+			else
+			{
+				system("cls");
+				printf("Сожалеем, билеты закончились\n\nEsc - выход");
+				while (_getch() != Keys::Esc);
+				return;
+			}
+		case Keys::Esc:
 			return;
 		}
-		else
-		{
-			system("cls");
-			printf("Сожалеем, билеты закончились\n\nEsc - выход");
-			while (_getch() != Keys::Esc);
-			return;
-		}
-	case Keys::Esc:
-		return;
 	}
 }
 
@@ -261,9 +290,10 @@ void ShowUsers()
 	{
 
 	}
-	char ch = _getch();
-	while (ch != Keys::Esc)
+	char ch;
+	while (true)
 	{
+		ch = _getch();
 		auto user_it = userManager.userList.begin();
 		switch (ch)
 		{
@@ -284,8 +314,14 @@ void ShowUsers()
 		case Keys::Enter:
 			SelectUser(position);
 			return;
+		case Keys::Esc:
+			return;
 		}
-		console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+		for (int i = 0; i < console.ySize; i++)
+		{
+			if (i == position + 1)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+			else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+		}
 	}
 }
 
@@ -315,9 +351,10 @@ void SelectUser(int pos)
 	{
 
 	}
-	char ch = _getch();
-	while (ch != Keys::Esc)
+	char ch;
+	while (true)
 	{
+		ch = _getch();
 		switch (ch)
 		{
 		case Keys::UpArrow:
@@ -326,6 +363,8 @@ void SelectUser(int pos)
 		case Keys::DownArrow:
 			position = mod(++position, 3);
 			break;
+		case Keys::Esc:
+			return;
 		case Keys::Enter:
 			switch (position)
 			{
@@ -334,7 +373,7 @@ void SelectUser(int pos)
 				if ((*user_it).GetName() != userManager.currentUser->GetName())
 				{
 					printf("Вы не можете это сделать\n\nEsc - выход");
-					while (_getch() != 27);
+					while (_getch() != Keys::Esc);
 					return;
 				}
 				while (true)
@@ -354,7 +393,7 @@ void SelectUser(int pos)
 						else
 						{
 							printf("Не успешно\n\nEsc - выход");
-							while (_getch() != 27);
+							while (_getch() != Keys::Esc);
 							return;
 						}
 					}
@@ -370,9 +409,10 @@ void SelectUser(int pos)
 					{
 						;
 					}
-					char ch = _getch();
-					while (ch != 27)
+					char ch;
+					while (true)
 					{
+						ch = _getch();
 						switch (ch)
 						{
 						case Keys::UpArrow:
@@ -381,6 +421,8 @@ void SelectUser(int pos)
 						case Keys::DownArrow:
 							position = mod(++position, 2);
 							break;
+						case Keys::Esc:
+							return;
 						case Keys::Enter:
 							string password;
 							printf("Подтвердите пароль:\n");
@@ -427,7 +469,11 @@ void SelectUser(int pos)
 									}
 								}
 						}
-						console.DrawAttributeHorizontalLine(0, position, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+						for (int i = 0; i < console.ySize; i++)
+						{
+							if (i == position)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+							else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+						}
 					}
 				}
 			case 2:
@@ -443,9 +489,10 @@ void SelectUser(int pos)
 					{
 						;
 					}
-					char ch = _getch();
-					while (ch != 27)
+					char ch;
+					while (true)
 					{
+						ch = _getch();
 						switch (ch)
 						{
 						case Keys::UpArrow:
@@ -453,6 +500,8 @@ void SelectUser(int pos)
 							return;
 						case Keys::DownArrow:
 							position = mod(++position, (int)(*user_it).GetFilms().size());
+							return;
+						case Keys::Esc:
 							return;
 						case Keys::Enter:
 							auto film_it = (*user_it).GetFilms().begin();
@@ -463,14 +512,22 @@ void SelectUser(int pos)
 							(*user_it).GetFilms().erase(film_it);
 							userManager.WriteObject();
 						}
-						console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+						for (int i = 0; i < console.ySize; i++)
+						{
+							if (i == position + 1)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+							else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+						}
 					}
 			}
 			return;
 		default:
 			break;
 		}
-		console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+		for (int i = 0; i < console.ySize; i++)
+		{
+			if (i == position + 1)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+			else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+		}
 	}
 }
 
@@ -488,9 +545,10 @@ void ShowFilms()
 	{
 
 	}
-	char ch = _getch();
-	while (ch != Keys::Esc)
+	char ch;
+	while (true)
 	{
+		ch = _getch();
 		auto film_it = userManager.filmManager.GetFilms().begin();
 		switch (ch)
 		{
@@ -511,10 +569,16 @@ void ShowFilms()
 		case Keys::Enter:
 			SelectFilm(position);
 			return;
+		case Keys::Esc:
+			return;
 		default:
 			break;
 		}
-		console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+		for (int i = 0; i < console.ySize; i++)
+		{
+			if (i == position + 1)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+			else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+		}
 	}
 }
 
@@ -534,9 +598,10 @@ void SelectFilm(int pos)
 	{
 
 	}
-	char ch = _getch();
-	while (ch != Keys::Esc)
+	char ch;
+	while (true)
 	{
+		ch = _getch();
 		switch (ch)
 		{
 		case Keys::UpArrow:
@@ -545,6 +610,8 @@ void SelectFilm(int pos)
 		case Keys::DownArrow:
 			position = mod(++position, 5);
 			break;
+		case Keys::Esc:
+			return;
 		case Keys::Enter:
 			string name;
 			string date;
@@ -603,6 +670,10 @@ void SelectFilm(int pos)
 				}
 			}
 		}
-		console.DrawAttributeHorizontalLine(0, position + 1, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+		for (int i = 0; i < console.ySize; i++)
+		{
+			if (i == position + 1)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+			else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+		}
 	}
 }
