@@ -4,6 +4,7 @@
 std::regex fioPattern_eng("^([A-Z])([a-z]*)\\s([A-Z])([a-z]*)$");
 std::regex fioPattern_rus("^[А-Я]([а-я]*)\\s[А-Я]([а-я]*)$");
 
+#include "stdio.h"
 #include <conio.h>
 #include <Windows.h>
 #include <locale>
@@ -22,6 +23,7 @@ FilmManager filmManager;
 UserManager userManager;
 Console console; //Еьлан, мы чары кидаем
 
+void FindFilm();
 void ShowUsers();
 void SelectUser(int);
 void ShowFilms();
@@ -31,10 +33,18 @@ void Registration();
 void BuyTicket();
 void GetTicketOnFilm(int);
 void Start();
+void CreateFilm();
 int mod(int, int);
+
+static void DbSyncAtexit()
+{
+	userManager.WriteObject();
+	userManager.filmManager.WriteObject();
+}
 
 int main()
 {
+	atexit(DbSyncAtexit);
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 	setlocale(LC_ALL, "Rus");
@@ -43,6 +53,7 @@ int main()
 	std::cout.imbue(std::locale());
 	filmManager = FilmManager("films.dat");
 	userManager = UserManager("users.dat", filmManager);
+	userManager.filmManager.SortFilms(Film::cmpByRoom);
     //Menu menu();
 	while (true) Start();
     return 0;
@@ -255,12 +266,18 @@ void BuyTicket()
 void GetTicketOnFilm(int position)
 {
 	system("cls");
-	auto film_it = userManager.filmManager.GetFilms().begin();
-	for (int i = 0; i < position; i++)
+	int k = -1;
+	Film setFilm;
+	for (auto film : userManager.filmManager.GetFilms())
 	{
-		film_it++;
+		k++;
+		if (k >= position)
+		{
+			setFilm = film;
+			break;
+		}
 	}
-	printf("Название:%s\n\tID:%d\n\tДата:%s\n\tВремя:%s\n\tЦена:%d руб\n\tЗал:%d\n\t", (*film_it).name.c_str(), (*film_it).FilmId, (*film_it).data.c_str(), (*film_it).time.c_str(), (*film_it).cost, (*film_it).room);
+	printf("Название:%s\n\tID:%d\n\tДата:%s\n\tВремя:%s\n\tЦена:%d руб\n\tЗал:%d\n\t", setFilm.name.c_str(), setFilm.FilmId, setFilm.data.c_str(), setFilm.time.c_str(), setFilm.cost, setFilm.room);
 	printf("Купить билет\n\nEsc - выход");
 	while (_kbhit() == 0)
 	{
@@ -274,12 +291,12 @@ void GetTicketOnFilm(int position)
 	}
 	while (true)
 	{
-		switch (ch)
+		switch (ch = _getch())
 		{
 		case Keys::Enter:
-			if ((*film_it).BuyTicket())
+			if (userManager.filmManager.BuyTicketById(setFilm.FilmId))
 			{
-				userManager.currentUser->AddFilm((*film_it).FilmId);
+				userManager.currentUser->AddFilm(setFilm.FilmId);
 				system("cls");
 				printf("Успех\n\nEsc - выход");
 				while (_getch() != Keys::Esc);
@@ -407,7 +424,6 @@ void SelectUser(int pos)
 					if (val.isNameValid(name))
 					{
 						printf("Подтвердите пароль:\n");
-						getline(cin, password);
 						if ((*user_it).SetName(name, password))
 						{
 							userManager.WriteObject();
@@ -449,10 +465,10 @@ void SelectUser(int pos)
 						case Keys::Enter:
 							string password;
 							printf("Подтвердите пароль:\n");
-							cin.ignore();
 							getline(cin, password);
-							if (position == 0)
-								if ((*user_it).SetAttributes(UserAttributes::Admin, crypto::xorDecrypt(password))
+							bool confirmed = userManager.currentUser->IsPasswordValid(password);
+							if (position == 0 && confirmed)
+								if (userManager.SetAttributes(*user_it, UserAttributes::Admin))
 								{
 									userManager.WriteObject();
 									return;
@@ -463,10 +479,10 @@ void SelectUser(int pos)
 								while (_getch() != 27);
 								return;
 							}
-							if (position == 1)
+							if (position == 1 && confirmed)
 								if ((*user_it).hasAttributes(UserAttributes::Blocked))
 								{
-									if ((*user_it).SetAttributes(NULL, password))
+									if (userManager.SetAttributes(*user_it, NULL))
 									{
 										userManager.WriteObject();
 										return;
@@ -480,7 +496,7 @@ void SelectUser(int pos)
 								}
 								else
 								{
-									if ((*user_it).SetAttributes(UserAttributes::Blocked, password))
+									if (userManager.SetAttributes(*user_it, UserAttributes::Blocked))
 									{
 										userManager.WriteObject();
 										return;
@@ -563,7 +579,7 @@ void ShowFilms()
 	{
 		printf("\n\t%s", film.name.c_str());
 	}
-	printf("\n\nDelete - удалить\nEsc - выход");
+	printf("\n\nDelete - удалить\nEsc - выход\nA - добавить фильм\nF - найти фильм\nEnter - выбрать фильм");
 	int position = 0;
 	while (_kbhit() == 0)
 	{
@@ -577,10 +593,10 @@ void ShowFilms()
 		switch (ch)
 		{
 		case Keys::UpArrow:
-			position = mod(--position, (int)userManager.filmManager.GetFilms().size());
+			position = (int)userManager.filmManager.GetFilms().size() != 0 ? mod(--position, (int)userManager.filmManager.GetFilms().size()) : 0;
 			break;
 		case Keys::DownArrow:
-			position = mod(++position, (int)userManager.filmManager.GetFilms().size());
+			position = (int)userManager.filmManager.GetFilms().size() != 0 ? mod(++position, (int)userManager.filmManager.GetFilms().size()) : 0;
 			break;
 		case Keys::Delete:
 			for (int i = 0; i < position; i++)
@@ -593,7 +609,7 @@ void ShowFilms()
 		case Keys::Enter:
 			SelectFilm(position);
 			return;
-		/*case 'A':
+		case 'A':
 			CreateFilm();
 			return;
 		case 'a':
@@ -604,7 +620,19 @@ void ShowFilms()
 			return;
 		case 'Ф':
 			CreateFilm();
-			return;*/
+			return;
+		case 'F':
+			FindFilm();
+			return;
+		case 'f':
+			FindFilm();
+			return;
+		case 'а':
+			FindFilm();
+			return;
+		case 'А':
+			FindFilm();
+			return;
 		case Keys::Esc:
 			return;
 		default:
@@ -618,16 +646,140 @@ void ShowFilms()
 	}
 }
 
+void FindFilm()
+{
+	system("cls");
+	printf("Найти по названию\nНайти по Id\n\nEsc - выход");
+	int position = 0;
+	while (_kbhit() == 0)
+	{
+
+	}
+	char ch;
+	bool isSet = false;
+	while (!isSet)
+	{
+		ch = _getch();
+		switch (ch)
+		{
+		case Keys::UpArrow:
+			position = mod(--position, 2);
+			break;
+		case Keys::DownArrow:
+			position = mod(++position, 2);
+			break;
+		case Keys::Enter:
+			isSet = true;
+			break;
+		case Keys::Esc:
+			return;
+		default:
+			break;
+		}
+		for (int i = 0; i < console.ySize; i++)
+		{
+			if (i == position)console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Magenta, ConsoleColor::Cyan);
+			else console.DrawAttributeHorizontalLine(0, i, console.xSize, ConsoleColor::Black, ConsoleColor::White);
+		}
+	}
+	string pattern;
+	system("cls");
+	if (position == 0)
+	{
+		printf("Введите название: ");
+		getline(cin, pattern);
+		list<Film> results = userManager.filmManager.SearchFilmsByName(pattern);
+		printf("Фильмов найдено: %d", results.size());
+		for (auto film : results)
+		{
+			printf("Фильм: %s \t Id: %d", film.name.c_str(), film.FilmId);
+		}
+	}
+	else
+	{
+		printf("Введите id: ");
+		getline(cin, pattern);
+		while (Validator::useRegex(pattern, "^[0-9]{1,8}$"))
+		{
+			printf("\nВведите id: ");
+			getline(cin, pattern);
+		}
+		int id = atoi(pattern.c_str());
+		Film result = userManager.filmManager.SearchFilmById(id);
+		printf("Фильм: %s \t Id: %d", result.name.c_str(), result.FilmId);
+	}
+	printf("\n\nEsc - выход: ");
+	while (char h = _getch() != Keys::Esc);
+	return;
+}
+
+void CreateFilm()
+{
+	system("cls");
+	Film* film;
+	string title;
+	printf("Set film title: ");
+	getline(cin, title);
+	string date;
+	printf("\nSet show date (dd.mm.yyyy): ");
+	getline(cin, date);
+	while (!Validator::isDataValid(date))
+	{
+		printf("\nWrong format try again, set show date (dd.mm.yyyy): ");
+		getline(cin, date);
+	}
+	string time;
+	printf("\nSet show time (hh:mm): ");
+	getline(cin, time);
+	while (!Validator::isTimeValid(time))
+	{
+		printf("\nWrong format try again, set show time (hh:mm): ");
+		getline(cin, time);
+	}
+	uint8_t _room;
+	string room;
+	printf("\nSet room [0-99]: ");
+	getline(cin, room);
+	while (!Validator::useRegex(room, "^[0-9]{1,2}$"))
+	{
+		printf("\nWrong format try again, set room [0-255]: ");
+		getline(cin, room);
+	}
+	_room = (uint8_t)atoi(room.c_str());
+	uint32_t cost;
+	string _cost;
+	printf("\nSet ticket cost [0-99999]: ");
+	getline(cin, _cost);
+	while (!Validator::useRegex(_cost, "^[0-9]{1,5}$"))
+	{
+		printf("\nWrong format try again, set ticket cost [0-99999]: ");
+		getline(cin, _cost);
+	}
+	cost = (uint8_t)atoi(_cost.c_str());
+	int FilmId = userManager.filmManager.GetNewId();
+	film = new Film(FilmId, title, date, time, _room, cost);
+	userManager.filmManager.AddFilm(*film);
+	userManager.filmManager.WriteObject();
+	delete film;
+	return;
+}
+
 void SelectFilm(int pos)
 {
 	system("cls");
-	auto film_it = userManager.filmManager.GetFilms().begin();
-	for (int i = 0; i < pos; i++)
+	int k = -1;
+	Film setFilm;
+	for (auto film : userManager.filmManager.GetFilms())
 	{
-		film_it++;
+		k++;
+		if (k >= pos)
+		{
+			setFilm = film;
+			break;
+		}
 	}
 	printf("Фильмы:");
-	printf("\n\tНазвание:%s\n\t\tID:%d\n\t\tДата:%s\n\t\tВремя:%s\n\t\tЦена:%d руб\n\t\tЗал:%d", (*film_it).name.c_str(), (*film_it).FilmId, (*film_it).data.c_str(), (*film_it).time.c_str(), (*film_it).cost, (*film_it).room);
+	printf("\n\tНазвание:%s\n\t\tID:%d\n\t\tДата:%s\n\t\tВремя:%s\n\t\tЦена:%d руб\n\t\tЗал:%d\n\t\tСуммарный сбор:%d", setFilm.name.c_str(), setFilm.FilmId, setFilm.data.c_str(), setFilm.time.c_str(), setFilm.cost, setFilm.room, setFilm.totalCost);
 	printf("\n\nEsc - выход");
 	int position = 0;
 	while (_kbhit() == 0)
@@ -658,7 +810,7 @@ void SelectFilm(int pos)
 				system("cls");
 				printf("Введите новое название:\n");
 				getline(cin, name);
-				(*film_it).name = name;
+				userManager.filmManager.SearchFilmById_unsafe(setFilm.FilmId).name = name;
 				userManager.filmManager.WriteObject();
 				return;
 			case 1:
@@ -670,11 +822,10 @@ void SelectFilm(int pos)
 				while (true)
 				{
 					printf("Введите новую дату:\n");
-					cin.ignore();
 					getline(cin, date);
 					if (Validator::isDataValid(date))
 					{
-						(*film_it).data = date;
+						userManager.filmManager.SearchFilmById_unsafe(setFilm.FilmId).data = date;
 						userManager.filmManager.WriteObject();
 						return;
 					}
@@ -685,11 +836,10 @@ void SelectFilm(int pos)
 				while (true)
 				{
 					printf("Введите новое время:\n");
-					cin.ignore();
 					getline(cin, time);
 					if (Validator::isTimeValid(time))
 					{
-						(*film_it).time = time;
+						userManager.filmManager.SearchFilmById_unsafe(setFilm.FilmId).time = time;
 						userManager.filmManager.WriteObject();
 						return;
 					}
@@ -701,9 +851,17 @@ void SelectFilm(int pos)
 				while (true)
 				{
 					printf("Введите новую цену:\n");
-					cin.ignore();
-					::cin >> cost;
-					(*film_it).cost = cost;
+					uint32_t cost;
+					string _cost;
+					printf("\nSet ticket cost [0-99999]: ");
+					getline(cin, _cost);
+					while (!Validator::useRegex(_cost, "^[0-9]{1,5}$"))
+					{
+						printf("\nWrong format try again, set ticket cost [0-99999]: ");
+						getline(cin, _cost);
+					}
+					cost = atoi(_cost.c_str());
+					userManager.filmManager.SearchFilmById_unsafe(setFilm.FilmId).time = time;
 					userManager.filmManager.WriteObject();
 					return;
 				}

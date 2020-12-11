@@ -18,17 +18,20 @@ class Film
 public:
     Film()
     {
+        this->totalCost = 0;
         this->tickets = new uint8_t[ROOM_CAPACITY + 1];
         memset(this->tickets, EMPTY_PLACE, ROOM_CAPACITY);
         ((char*)this->tickets)[ROOM_CAPACITY] = '\0';
     }
 
-    Film(const int& filmId, const string& name, const string& data, const string& time, uint8_t room)
+    Film(const int& filmId, const string& name, const string& data, const string& time, uint8_t room, uint32_t cost)
     {
+        this->totalCost = 0;
         this->FilmId = filmId;
         this->name = name;
         this->data = data;
         this->room = room;
+        this->cost = cost;
         this->tickets = new uint8_t[ROOM_CAPACITY + 1];
         memset(this->tickets, EMPTY_PLACE, ROOM_CAPACITY);
         ((char*)this->tickets)[ROOM_CAPACITY] = '\0';
@@ -126,6 +129,12 @@ public:
         return lhs.totalCost - rhs.totalCost;
     }
 
+    Film& operator=(const Film& another)
+    {
+        new(this) Film(another);
+        return *this;
+    }
+
     ~Film()
     {
         delete[] tickets;
@@ -141,11 +150,12 @@ public:
 
     uint8_t room;
 
-    int cost;
+    uint32_t cost;
+
+    uint32_t totalCost;
 private:
     friend class FilmManager;
 
-    int totalCost;
 
     uint8_t* tickets;
 };

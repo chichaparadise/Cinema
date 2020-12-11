@@ -63,6 +63,13 @@ public:
         return Film();
     }
 
+    Film& SearchFilmById_unsafe(int& filmId)
+    {
+        for (auto film_it = this->filmList.begin(); film_it != this->filmList.end(); ++film_it)
+            if (filmId == (*film_it).FilmId)
+                return *film_it;
+    }
+
     void SortFilms(int (*_pred)(const Film&, const Film&))
     {
         this->filmList.sort(_pred);
@@ -86,9 +93,9 @@ public:
 
     bool BuyTicketById(int& filmId)
     {
-        for (auto _film : filmList)
-            if (filmId == _film.FilmId)
-                return _film.BuyTicket();
+        for (auto film_it = this->filmList.begin(); film_it != this->filmList.end(); ++film_it)
+            if (filmId == (*film_it).FilmId)
+                return (*film_it).BuyTicket();
         return false;
     }
 
@@ -285,6 +292,11 @@ public:
         {
             error_manager->WriteObject();
         }
+    }
+
+    inline int GetNewId()
+    {
+        return currentFilmId++;
     }
 private:
     friend class UserManager;

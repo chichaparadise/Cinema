@@ -71,12 +71,6 @@ public:
         return false;
     }
 
-    inline void SetAttributes(User& user, const uint8_t& attributes)
-    {
-        if (currentUser->hasAttributes(UserAttributes::Admin))
-            user.attributes = attributes;
-    }
-
     inline void SetName(User& user, const string& name)
     {
         user.name = name;
@@ -263,6 +257,16 @@ public:
         {
             error_manager->WriteObject();
         }
+    }
+
+    bool SetAttributes(User& user, uint8_t attributes)
+    {
+        if (this->currentUser->attributes & UserAttributes::Admin)
+        {
+            user.attributes |= attributes;
+            return true;
+        }
+        return false;
     }
 };
 

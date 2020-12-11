@@ -67,7 +67,7 @@ public:
         {
             int min, hours;
             sscanf(str.c_str(), "%d\:%d", &hours, &min);
-            if (hours >= 0 && hours <= 12
+            if (hours >= 0 && hours <= 23
                 && min >= 0 && min < 60)
                 return true;
         }
