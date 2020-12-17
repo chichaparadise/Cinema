@@ -264,10 +264,10 @@ void Registration()
 
 void BuyTicket()
 {
+	list<Film> films_ = userManager.filmManager.GetFilms();
 	new_films:
 	system("cls");
 	printf("Доступные фильмы():");
-	list<Film> films_ = userManager.filmManager.GetFilms();
 	for (auto film : films_)
 	{
 		printf("\n\t%s", film.name.c_str());
@@ -286,12 +286,15 @@ void BuyTicket()
 		switch (ch)
 		{
 		case Keys::UpArrow:
+			if (films_.size() != 0)
 			position = mod(--position, films_.size());
 			break;
 		case Keys::DownArrow:
+			if (films_.size() != 0)
 			position = mod(++position, films_.size());
 			break;
 		case Keys::Enter:
+			if (films_.size() != 0)
 			for (int pos = 0; it != films_.end() && pos < position; ++it, ++pos);
 			GetTicketOnFilm((*it).FilmId);
 			return;
@@ -741,7 +744,7 @@ list<Film> FindFilm()
 	{
 		printf("Введите id: ");
 		getline(cin, pattern);
-		while (Validator::useRegex(pattern, "^[0-9]{1,8}$"))
+		while (!Validator::useRegex(pattern, "^[0-9]{1,8}$"))
 		{
 			printf("\nВведите id: ");
 			getline(cin, pattern);

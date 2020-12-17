@@ -30,6 +30,7 @@ public:
         this->FilmId = filmId;
         this->name = name;
         this->data = data;
+        this->time = time;
         this->room = room;
         this->cost = cost;
         this->tickets = new uint8_t[ROOM_CAPACITY + 1];
@@ -84,12 +85,13 @@ public:
         char* _ptr = (char*)this->tickets;
         for (int i = 0; i < ROOM_CAPACITY; ++i)
         {
-            if (*_ptr == EMPTY_PLACE)
+            if (*(_ptr) == EMPTY_PLACE)
             {
-                *_ptr = BOOKED_PLACE;
+                *(_ptr) = BOOKED_PLACE;
                 totalCost += cost;
                 return true;
             }
+            _ptr++;
         }
         return false;
     }
@@ -116,17 +118,17 @@ public:
 
     static inline int cmpByTicketCost(const Film& lhs, const Film& rhs)
     {
-        return lhs.cost - rhs.cost;
+        return lhs.cost < rhs.cost;
     }
 
     static inline int cmpByRoom(const Film& lhs, const Film& rhs)
     {
-        return lhs.room - rhs.room;
+        return lhs.room < rhs.room;
     }
 
     static inline bool cmpByTotalCost(const Film& lhs, const Film& rhs)
     {
-        return lhs.totalCost - rhs.totalCost;
+        return lhs.totalCost < rhs.totalCost;
     }
 
     Film& operator=(const Film& another)
